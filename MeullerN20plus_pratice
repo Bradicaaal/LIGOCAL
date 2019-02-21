@@ -104,17 +104,68 @@ S4 = ifft(S3);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ploting Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Frequency Domain Graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-figure
-hold on
-plot(fgw, S3)
-plot(fgw, S2)
-line([Nyq Nyq], get(gca, 'ylim'));
-hold off
+X1 = fgw;
+YMatrix1 = [S2, S3];
 
-figure
-hold on
-plot(fgw, S1)
-plot(fgw, S4)
-hold off
+figure1 = figure;
 
+% Create axes
+axes1 = axes('Parent',figure1);
+hold(axes1,'on');
+
+% Create multiple lines using matrix input to plot
+plot1 = plot(X1,YMatrix1);
+set(plot1(1),'DisplayName','Undistorted Data');
+set(plot1(2),'DisplayName','Distorted Data');
+
+% Create line
+line([Nyq, Nyq], get(gca, 'ylim'),'Parent',axes1,'DisplayName','Nyquist Frequency',...
+    'LineStyle','--',...
+    'Color',[1 0 0]);
+
+% Create ylabel
+ylabel({'Strain'});
+
+% Create xlabel
+xlabel({'Frequency'});
+
+% Create title
+title({'N20-2_theta1.396_phi0.000-plus'},'Interpreter','latex');
+
+xlim(axes1,[0 16381]);
+% Create legend
+legend1 = legend(axes1,'show');
+set(legend1,'Location','northeastoutside');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Time Domain Graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+X2 = time;
+YMatrix2 = [S1, S4];
+figure2 = figure;
+
+% Create axes
+axes2 = axes('Parent',figure2);
+hold(axes2,'on');
+
+% Create multiple lines using matrix input to plot
+plot1 = plot(X2,YMatrix2);
+set(plot1(1),'DisplayName','Undistorted Data');
+set(plot1(2),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain'});
+
+% Create xlabel
+xlabel({'Time'});
+xlim(axes2,[0 24575]);
+
+% Create title
+title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+
+% Create legend
+legend(axes2,'show');
