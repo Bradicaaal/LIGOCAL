@@ -1,0 +1,171 @@
+clc
+clear
+close all %cloes previous graphs that you did not want open anymore
+
+c = 3E8;
+
+theta=pi/2-0.01; %this is the angle from the top, perp to arms
+phi=0; %this is the angle wrt to the x arm
+nx = sin(theta)*cos(phi);
+
+L1=4000;
+L2=40000;
+
+T1=L1/c;
+T2=L2/c;
+
+r1=0.8;
+r2=0.8;
+
+flaser = 3.7E14;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read and Clean DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+IN = dlmread('hplus-B12-WH07_detrend.txt'); %Read and record the strain data
+IN_strain = IN(:,2);
+
+S1 = zeros(sum(IN_strain > 0),1);
+
+ii = 1;
+for i = 1 : length(IN_strain)
+    
+    if IN_strain(i,1) ~= 0
+        S1(ii,1) = IN_strain(i,1);
+        ii = ii + 1;
+    end
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Defining Constants Implicit to the DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+time = IN(:,1);
+
+SamplingRate = 1/((max(time) - min(time))/length(time));%This is the sampling rate- delta t
+Nyq = (1/2)* SamplingRate; %This is the Nyquis frequency, which is half the sampling rate.
+
+fgw = (1:((SamplingRate-1)/(length(S1)-1)):SamplingRate);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fouirer Transform and Spliting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+S2 = fft(S1);
+
+real_S2 = real(S2);
+imag_S2 = imag(S2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introducing Amplitude and Phase Error
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if rem(length(fgw), 2) == 0
+    
+    k = length(fgw)/2;
+    kk = (length(fgw)/2)+1;
+    
+else
+    
+    k = floor(length(fgw)/2);
+    kk = ceil(length(fgw)/2);
+    
+end
+
+S3 = zeros([size(S2), 1]);
+
+for j = 1 : (0.5 * length(fgw))
+    
+    a = -0.15 + (0.15-(-0.15)).*rand(1);
+    b = -0.15 + (0.15-(-0.15)).*rand(1);
+    
+    %     a = .10;
+    %     b = .10;
+    
+    amp_error = (1 + a);
+    phase_error = (1 + b);
+    phase_error_neg = (1 - b);
+    
+    S3(k,1) = (real_S2(k,1) * amp_error) * exp(1i * phi * imag_S2(k,1) * phase_error);
+    S3(kk,1) = (real_S2(kk,1) * amp_error) * exp(1i * phi * imag_S2(kk,1) * phase_error_neg);
+    
+    %S3(k,1) = (real_S2(k,1) * amp_error);
+    %S3(kk,1) = (real_S2(kk,1) * amp_error);
+    
+    k = k - 1;
+    kk = kk + 1;
+    
+end
+
+S4 = ifft(S3);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ploting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Frequency Domain Graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+X1 = fgw;
+YMatrix1 = [S2, S3];
+
+figure1 = figure;
+
+% Create axes
+axes1 = axes('Parent',figure1);
+hold(axes1,'on');
+
+% Create multiple lines using matrix input to plot
+plot1 = plot(X1,YMatrix1);
+set(plot1(1),'DisplayName','Undistorted Data');
+set(plot1(2),'DisplayName','Distorted Data');
+
+% Create line
+line([Nyq, Nyq], get(gca, 'ylim'),'Parent',axes1,'DisplayName','Nyquist Frequency',...
+    'LineStyle','--',...
+    'Color',[1 0 0]);
+
+% Create ylabel
+ylabel({'Strain'});
+
+% Create xlabel
+xlabel({'Frequency'});
+
+% Create title
+title({'hplus-B12-WH07_detrend'},'Interpreter','latex');
+
+xlim(axes1,[min(fgw) max(fgw)]);
+% Create legend
+legend1 = legend(axes1,'show');
+set(legend1,'Location','northeastoutside');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Time Domain Graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+X2 = time;
+YMatrix2 = [S1, S4];
+figure2 = figure;
+
+% Create axes
+axes2 = axes('Parent',figure2);
+hold(axes2,'on');
+
+% Create multiple lines using matrix input to plot
+plot1 = plot(X2,YMatrix2);
+set(plot1(1),'DisplayName','Undistorted Data');
+set(plot1(2),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain'});
+
+% Create xlabel
+xlabel({'Time'});
+xlim(axes2,[min(time) max(time)]);
+
+% Create title
+title({'hplus-B12-WH07_detrend'},'Interpreter','latex');
+
+% Create legend
+legend(axes2,'show');
