@@ -1,0 +1,120 @@
+clear
+clc
+
+close all %cloes previous graphs that you did not want open anymore
+
+c = 3E8;
+
+theta=1; %this is the angle from the top, perp to arms
+phi=1; %this is the angle wrt to the x arm
+nx = sin(theta)*cos(phi);
+
+L1=4000;
+L2=4000;
+
+T1=L1/c;
+T2=L2/c;
+
+r1=0.8;
+r2=0.8;
+
+flaser = 3.7E14;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read and Clean DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+IN = dlmread('N20-2_theta1.396_phi0.000-plus.txt'); %Read and record the strain data
+
+S1 = zeros(sum(IN > 0),1);
+
+ii = 1;
+for i = 1 : length(IN)
+    
+    if IN(i,1) ~= 0
+        S1(ii,1) = IN(i,1);
+        ii = ii + 1;
+    end
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Defining Constants Implicit to the DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SamplingRate =  16381; %Given
+Nyq = (1/2)* SamplingRate; %This is the Nyquis frequency, which is half the sampling rate.
+
+time = (1:1:length(S1));
+
+fgw = (1:((SamplingRate-1)/(length(S1)-1)):SamplingRate);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fouirer Transform and Spliting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+S2 = fft(S1);
+
+real_S2 = real(S2);
+imag_S2 = imag(S2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introducing Amplitude and Phase Error
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if rem(length(fgw), 2) == 0
+    
+    k = length(fgw)/2;
+    kk = (length(fgw)/2)+1;
+    
+else
+    
+    k = floor(length(fgw)/2);
+    kk = ceil(length(fgw)/2);
+    
+end
+
+S3 = zeros([size(S2), 1]);
+
+for j = 1 : (0.5 * length(fgw))
+    
+    %a = -0.15 + (0.15-(-0.15)).*rand(1);
+    %b = -0.15 + (0.15-(-0.15)).*rand(1);
+    
+    a = .10;
+    b = .10;
+    
+    amp_error = (1 + a);
+    phase_error = (1 + b);
+    phase_error_neg = (1 - b);
+    
+    S3(k,1) = (real_S2(k,1) * amp_error) * exp(1i * phi * imag_S2(k,1) * phase_error);
+    S3(kk,1) = (real_S2(kk,1) * amp_error) * exp(1i * phi * imag_S2(kk,1) * phase_error_neg);
+    
+    %S3(k,1) = (real_S2(k,1) * amp_error);
+    %S3(kk,1) = (real_S2(kk,1) * amp_error);
+    
+    k = k - 1;
+    kk = kk + 1;
+    
+end
+
+S4 = ifft(S3);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ploting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure
+hold on
+plot(fgw, S3)
+plot(fgw, S2)
+line([Nyq Nyq], get(gca, 'ylim'));
+hold off
+
+figure
+hold on
+plot(fgw, S1)
+plot(fgw, S4)
+hold off
+
