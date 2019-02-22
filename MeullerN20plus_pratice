@@ -80,7 +80,7 @@ for j = 1 : (0.5 * length(fgw))
     phase_error = (1 + b);
     
     S3(k,1) = (abs_S2(k,1) * amp_error) * exp(1i * phi * angle_S2(k,1) * phase_error);
-    S3(kk,1) = (abs_S2(kk,1) * amp_error) * exp(-1i * phi * angle_S2(kk,1) * phase_error);
+    S3(kk,1) = (abs_S2(kk,1) * amp_error) * exp(1i * phi * angle_S2(kk,1) * phase_error);
     
     k = k - 1;
     kk = kk + 1;
@@ -92,7 +92,7 @@ S4 = ifft(S3);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ploting Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Frequency Domain Graph
+% Frequency Domain Graph Real
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 X1 = fgw;
