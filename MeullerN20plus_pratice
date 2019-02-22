@@ -47,6 +47,7 @@ Nyq = (1/2)* SamplingRate; %This is the Nyquis frequency, which is half the samp
 
 time = (1:1:length(S1));
 
+N_Nyq = (length(S1)* 1/2) + 1;
 fgw = (1:((SamplingRate-1)/(length(S1)-1)):SamplingRate);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,44 +56,31 @@ fgw = (1:((SamplingRate-1)/(length(S1)-1)):SamplingRate);
 
 S2 = fft(S1);
 
-real_S2 = real(S2);
-imag_S2 = imag(S2);
+abs_S2 = abs(S2);
+angle_S2 = angle(S2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Introducing Amplitude and Phase Error
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if rem(length(fgw), 2) == 0
-    
-    k = length(fgw)/2;
-    kk = (length(fgw)/2)+1;
-    
-else
-    
-    k = floor(length(fgw)/2);
-    kk = ceil(length(fgw)/2);
-    
-end
+k = floor(N_Nyq);
+kk = ceil(N_Nyq);
 
 S3 = zeros([size(S2), 1]);
 
 for j = 1 : (0.5 * length(fgw))
     
-    %a = -0.15 + (0.15-(-0.15)).*rand(1);
-    %b = -0.15 + (0.15-(-0.15)).*rand(1);
+    a = -0.15 + (0.15-(-0.15)).*rand(1);
+    b = -0.15 + (0.15-(-0.15)).*rand(1);
     
-    a = .10;
-    b = .10;
+    %a = .10;
+    %b = .10;
     
     amp_error = (1 + a);
     phase_error = (1 + b);
-    phase_error_neg = (1 - b);
     
-    S3(k,1) = (real_S2(k,1) * amp_error) * exp(1i * phi * imag_S2(k,1) * phase_error);
-    S3(kk,1) = (real_S2(kk,1) * amp_error) * exp(1i * phi * imag_S2(kk,1) * phase_error_neg);
-    
-    %S3(k,1) = (real_S2(k,1) * amp_error);
-    %S3(kk,1) = (real_S2(kk,1) * amp_error);
+    S3(k,1) = (abs_S2(k,1) * amp_error) * exp(1i * phi * angle_S2(k,1) * phase_error);
+    S3(kk,1) = (abs_S2(kk,1) * amp_error) * exp(-1i * phi * angle_S2(kk,1) * phase_error);
     
     k = k - 1;
     kk = kk + 1;
@@ -131,11 +119,11 @@ ylabel({'Strain'});
 
 % Create xlabel
 xlabel({'Frequency'});
+xlim(axes1,[0 16381]);
 
 % Create title
-title({'N20-2_theta1.396_phi0.000-plus'},'Interpreter','latex');
+title({'N20-2_theta1.396_phi0.000-plus (real)'},'Interpreter','latex');
 
-xlim(axes1,[0 16381]);
 % Create legend
 legend1 = legend(axes1,'show');
 set(legend1,'Location','northeastoutside');
@@ -144,28 +132,28 @@ set(legend1,'Location','northeastoutside');
 % Time Domain Graph
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-X2 = time;
-YMatrix2 = [S1, S4];
-figure2 = figure;
+X3 = time;
+YMatrix3 = [S1, S4];
+figure3 = figure;
 
 % Create axes
-axes2 = axes('Parent',figure2);
-hold(axes2,'on');
+axes3 = axes('Parent',figure3);
+hold(axes3,'on');
 
 % Create multiple lines using matrix input to plot
-plot1 = plot(X2,YMatrix2);
-set(plot1(1),'DisplayName','Undistorted Data');
-set(plot1(2),'DisplayName','Distorted Data');
+plot3 = plot(X3,YMatrix3);
+set(plot3(1),'DisplayName','Undistorted Data');
+set(plot3(2),'DisplayName','Distorted Data');
 
 % Create ylabel
 ylabel({'Strain'});
 
 % Create xlabel
 xlabel({'Time'});
-xlim(axes2,[0 24575]);
+xlim(axes3,[0 24575]);
 
 % Create title
-title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+title({'N20_2_theta1.396_phi0.000_plus (real)'},'Interpreter','latex');
 
 % Create legend
-legend(axes2,'show');
+legend(axes3,'show');
