@@ -1,0 +1,240 @@
+clear
+clc
+
+close all %cloes previous graphs that you did not want open anymore
+
+c = 3E8;
+
+theta=1; %this is the angle from the top, perp to arms
+phi=1; %this is the angle wrt to the x arm
+nx = sin(theta)*cos(phi);
+
+L1=4000;
+L2=4000;
+
+T1=L1/c;
+T2=L2/c;
+
+r1=0.8;
+r2=0.8;
+
+flaser = 3.7E14;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read and Clean DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+IN = dlmread('DATA FILE GOES HERE'); %Read and record the strain data
+
+S1 = zeros(sum(IN > 0),1);
+
+ii = 1;
+for i = 1 : length(IN)
+    
+    if IN(i,1) ~= 0
+        S1(ii,1) = IN(i,1);
+        ii = ii + 1;
+    end
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Defining Constants Implicit to the DATA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SamplingRate =  16381; %Given
+Nyq = (1/2)* SamplingRate; %This is the Nyquis frequency, which is half the sampling rate.
+
+time = (1:1:length(S1));
+
+N_Nyq = (length(S1)* 1/2) + 1;
+fgw = (1:((SamplingRate-1)/(length(S1)-1)):SamplingRate);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fouirer Transform and Spliting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+S2 = fft(S1);
+
+abs_S2 = abs(S2);
+angle_S2 = angle(S2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introducing Amplitude and Phase Error
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+k = floor(N_Nyq);
+kk = ceil(N_Nyq);
+
+S3 = zeros([size(S2), 1]);
+
+for j = 1 : (0.5 * length(fgw))
+    
+    a = -0.15 + (0.15-(-0.15)).*rand(1);
+    b = -0.15 + (0.15-(-0.15)).*rand(1);
+    
+    %a = .10;
+    %b = .10;
+    
+    amp_error = (1 + a);
+    phase_error = (1 + b);
+    
+    S3(k,1) = (abs_S2(k,1) * amp_error) * exp(1i * phi * angle_S2(k,1) * phase_error);
+    S3(kk,1) = (abs_S2(kk,1) * amp_error) * exp(1i * phi * angle_S2(kk,1) * phase_error);
+    
+    k = k - 1;
+    kk = kk + 1;
+    
+end
+
+S4 = ifft(S3);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ploting Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+real_S2 = real(S2);
+real_S3 = real(S3);
+
+imag_S2 = imag(S2);
+imag_S3 = imag(S3);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Frequency Domain Graph Real
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Real = figure;
+
+% Create axes
+frequency_axes = axes('Parent',Real);
+hold(frequency_axes,'on');
+
+% Create multiple lines using matrix input to plot
+Real_Plot = plot(fgw,[real_S2, real_S3]);
+set(Real_Plot(1),'DisplayName','Undistorted Data');
+set(Real_Plot(2),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain [\deltaL/L]'});
+
+% Create xlabel
+xlabel({'Frequency [Hz]'});
+xlim(frequency_axes,[0 400]);
+
+% Create title
+title({'N20-2_theta1.396_phi0.000-plus (real)'},'Interpreter','latex');
+
+% Create legend
+legend(frequency_axes,'show');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Frequency Domain Graph Imaginary
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Imaginary = figure;
+
+% Create axes
+frequency_axes = axes('Parent',Imaginary);
+hold(frequency_axes,'on');
+
+% Create multiple lines using matrix input to plot
+Imaginary_Plot = plot(fgw,[imag(S2), imag(S3)]);
+set(Imaginary_Plot(1),'DisplayName','Undistorted Data');
+set(Imaginary_Plot(2),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain [\deltaL/L]'});
+
+% Create xlabel
+xlabel({'Frequency [Hz]'});
+xlim(frequency_axes,[0 400]);
+
+% Create title
+title({'N20-2_theta1.396_phi0.000-plus (imaginary)'},'Interpreter','latex');
+
+% Create legend
+legend(frequency_axes,'show');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Time Domain Graph
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Super-Imposed 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Super_Imposed = figure;
+
+% Create axes
+time_axes = axes('Parent',Super_Imposed);
+hold(time_axes,'on');
+
+% Create multiple lines using matrix input to plot
+Super_Imposed_Plot = plot(time,[S1, S4]);
+set(Super_Imposed_Plot(1),'DisplayName','Undistorted Data');
+set(Super_Imposed_Plot(2),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain [\deltaL/L]'});
+
+% Create xlabel
+xlabel({'Time [s]'});
+xlim(time_axes,[min(time) max(time)]);
+
+% Create title
+title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+
+% Create legend
+legend(time_axes,'show');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Distorted
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Distorted = figure;
+
+% Create axes
+time_axes = axes('Parent',Distorted);
+hold(time_axes,'on');
+
+% Create multiple lines using matrix input to plot
+Distorted_Plot = plot(time,S4,'color',[0.9100    0.4100    0.1700]);
+set(Distorted_Plot(1),'DisplayName','Distorted Data');
+
+% Create ylabel
+ylabel({'Strain [\deltaL/L]'});
+
+% Create xlabel
+xlabel({'Time [s]'});
+xlim(time_axes,[min(time) max(time)]);
+
+% Create title
+title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+
+% Create legend
+legend(time_axes,'show');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Undistorted 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Undistorted = figure;
+
+% Create axes
+time_axes = axes('Parent',Undistorted);
+hold(time_axes,'on');
+
+% Create multiple lines using matrix input to plot
+Undistorted_Plot = plot(time, S1);
+set(Undistorted_Plot(1),'DisplayName','Undistorted Data');
+
+% Create ylabel
+ylabel({'Strain [\deltaL/L]'});
+
+% Create xlabel
+xlabel({'Time [s]'});
+xlim(time_axes,[min(time) max(time)]);
+
+% Create title
+title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+
+% Create legend
+legend(time_axes,'show');
