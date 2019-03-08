@@ -1,30 +1,22 @@
+% Script File - MeullerN20plus Data Distortion
+%
+% Name: Brad Ratto 
+% Group: Supernova LIGO  
+% 
+% Description:
+% Using data from the MeullerN20plus data file to alter and distort it in 
+% order to further analyze possible errors. 
+
 clear
 clc
 
 close all %cloes previous graphs that you did not want open anymore
 
-c = 3E8;
-
-theta=1; %this is the angle from the top, perp to arms
-phi=1; %this is the angle wrt to the x arm
-nx = sin(theta)*cos(phi);
-
-L1=4000;
-L2=4000;
-
-T1=L1/c;
-T2=L2/c;
-
-r1=0.8;
-r2=0.8;
-
-flaser = 3.7E14;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read and Clean DATA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-IN = dlmread('DATA FILE GOES HERE'); %Read and record the strain data
+IN = dlmread('N20-2_theta1.396_phi0.000-plus.txt'); %Read and record the strain data
 
 S1 = zeros(sum(IN > 0),1);
 
@@ -70,11 +62,14 @@ S3 = zeros([size(S2), 1]);
 
 for j = 1 : (0.5 * length(fgw))
     
-    a = -0.15 + (0.15-(-0.15)).*rand(1);
-    b = -0.15 + (0.15-(-0.15)).*rand(1);
+    % a = -0.15 + (0.15-(-0.15)).*rand(1);
+    % b = -0.15 + (0.15-(-0.15)).*rand(1);
     
-    %a = .10;
-    %b = .10;
+    % a = -0.10 + (0.10-(-0.10)).*rand(1);
+    % b = -0.10 + (0.10-(-0.10)).*rand(1);
+    
+    a = -0.05 + (0.05-(-0.05)).*rand(1);
+    b = -0.05 + (0.05-(-0.05)).*rand(1);
     
     amp_error = (1 + a);
     phase_error = (1 + b);
@@ -122,7 +117,7 @@ xlabel({'Frequency [Hz]'});
 xlim(frequency_axes,[0 400]);
 
 % Create title
-title({'N20-2_theta1.396_phi0.000-plus (real)'},'Interpreter','latex');
+title({'N20-2_theta1.396_phi0.000-plus (real) [±5% Error]'},'Interpreter','latex');
 
 % Create legend
 legend(frequency_axes,'show');
@@ -150,7 +145,7 @@ xlabel({'Frequency [Hz]'});
 xlim(frequency_axes,[0 400]);
 
 % Create title
-title({'N20-2_theta1.396_phi0.000-plus (imaginary)'},'Interpreter','latex');
+title({'N20-2_theta1.396_phi0.000-plus (imaginary) [±5% Error]'},'Interpreter','latex');
 
 % Create legend
 legend(frequency_axes,'show');
@@ -176,11 +171,11 @@ set(Super_Imposed_Plot(2),'DisplayName','Distorted Data');
 ylabel({'Strain [\deltaL/L]'});
 
 % Create xlabel
-xlabel({'Time [s]'});
+xlabel({'Time [ms]'});
 xlim(time_axes,[min(time) max(time)]);
 
 % Create title
-title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+title({'N20_2_theta1.396_phi0.000_plus [±5% Error]'},'Interpreter','latex');
 
 % Create legend
 legend(time_axes,'show');
@@ -203,11 +198,11 @@ set(Distorted_Plot(1),'DisplayName','Distorted Data');
 ylabel({'Strain [\deltaL/L]'});
 
 % Create xlabel
-xlabel({'Time [s]'});
+xlabel({'Time [ms]'});
 xlim(time_axes,[min(time) max(time)]);
 
 % Create title
-title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+title({'N20_2_theta1.396_phi0.000_plus [±5% Error]'},'Interpreter','latex');
 
 % Create legend
 legend(time_axes,'show');
@@ -230,11 +225,11 @@ set(Undistorted_Plot(1),'DisplayName','Undistorted Data');
 ylabel({'Strain [\deltaL/L]'});
 
 % Create xlabel
-xlabel({'Time [s]'});
+xlabel({'Time [ms]'});
 xlim(time_axes,[min(time) max(time)]);
 
 % Create title
-title({'N20_2_theta1.396_phi0.000_plus'},'Interpreter','latex');
+title({'N20_2_theta1.396_phi0.000_plus [±5% Error]'},'Interpreter','latex');
 
 % Create legend
 legend(time_axes,'show');
